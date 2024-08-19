@@ -7,7 +7,7 @@ export interface EmployeeData {
 
 export interface RoomData {
   name: string;
-  id: number;
+  calendarId: number;
 }
 
 export const employees: EmployeeData[] = JSON.parse(process.env.NEXT_PUBLIC_EMPLOYEE_DATA || '[]');

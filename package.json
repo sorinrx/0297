@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/kv": "^2.0.0",
     "axios": "^1.7.3",
     "body-parser": "^1.20.2",
     "crypto": "^1.0.1",
@@ -22,12 +23,13 @@
     "moment-timezone": "^0.5.45",
     "next": "14.1.4",
     "next-auth": "^4.24.7",
-    "openai": "^4.46.0",
+    "openai": "^4.56.0",
     "path": "^0.12.7",
     "react": "^18.3.1",
     "react-dom": "^18",
     "react-markdown": "^9.0.1",
     "smsapi": "^2.0.13",
+    "twilio": "^5.2.2",
     "uuid": "^10.0.0",
     "xml2js": "^0.6.2"
   },

@@ -257,3 +257,37 @@ export const checkAndAddMeeting = async (meetingData: {
     return { error: errorMessage };
   }
 };
+export const getCalendarEventsForRooms = async (roomsInput: string | string[] | 'all', from: string, to: string): Promise<{ output: { [room: string]: CalendarEvent[] | string } } | { error: string }> => {
+  console.log(`Fetching calendar events for rooms: ${roomsInput} from ${from} to ${to}`);
+
+  if (!isValidDate(from) || !isValidDate(to)) {
+    return { error: "Formatele datelor trebuie să fie YYYY-MM-DD." };
+  }
+
+  let roomsToFetch: string[];
+  if (roomsInput === 'all') {
+    roomsToFetch = rooms.map(room => room.name);
+  } else if (typeof roomsInput === 'string') {
+    roomsToFetch = [roomsInput];
+  } else {
+    roomsToFetch = roomsInput;
+  }
+
+  try {
+    const allEvents: { [room: string]: CalendarEvent[] | string } = {};
+    for (const room of roomsToFetch) {
+      const result = await getCalendarEvents(room, from, to);
+      if ('error' in result) {
+        console.error(`Error fetching events for room ${room}:`, result.error);
+        allEvents[room] = `Eroare: ${result.error}`;
+      } else {
+        allEvents[room] = result.output;
+      }
+    }
+    return { output: allEvents };
+  } catch (error) {
+    const errorMessage = "A apărut o eroare la obținerea evenimentelor din calendar pentru sălile specificate.";
+    console.error('Failed to get calendar events for specified rooms:', error);
+    return { error: errorMessage };
+  }
+};

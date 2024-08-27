@@ -21,4 +21,8 @@ export function findRoomData(roomName: string): RoomData | undefined {
   return rooms.find(room => room.name === roomName);
 }
 
+export function findEmployeeByPhoneNumber(phoneNumber: string): EmployeeData | undefined {
+  return employees.find(employee => employee.phoneNumber === phoneNumber);
+}
+
 export { employees as EmployeeData, rooms as RoomData };

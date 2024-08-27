@@ -214,6 +214,40 @@ const handlers = {
 
         return temporary_storage[data.pbx_call_id];
     },
+    'NOTIFY_OUT_END': function NOTIFY_OUT_END(data, signature) {
+        if (!temporary_storage[data.pbx_call_id]) {
+            console.log(`Initializing temporary storage for pbx_call_id: ${data.pbx_call_id}`);
+            temporary_storage[data.pbx_call_id] = {
+                event: [],
+                pbx_call_id: data.pbx_call_id,
+                from: data.caller_id,
+                to: data.destination,
+            };
+        }
+
+        temporary_storage[data.pbx_call_id].event.push(data.event);
+        Object.assign(
+            temporary_storage[data.pbx_call_id],
+            {
+                duration: data.duration,
+                disposition: data.disposition,
+                status: data.disposition,
+                status_code: data.status_code,
+                is_recorded: data.is_recorded,
+                verify: verify_data(`${data.caller_id}${data.destination}${data.call_start}`, signature)
+            }
+        );
+
+        const employee = findEmployeeByPhoneNumber(data.caller_id);
+        if (employee) {
+            console.log(`Outgoing call made by: ${employee.name}`);
+            temporary_storage[data.pbx_call_id].made_by = employee.userId;
+        } else {
+            console.log('No employee found for the caller number.');
+        }
+
+        return temporary_storage[data.pbx_call_id];
+    },
     'NOTIFY_RECORD': async function NOTIFY_RECORD(data, signature) {
     if (!temporary_storage[data.pbx_call_id]) {
         console.log(`Initializing temporary storage for pbx_call_id: ${data.pbx_call_id}`);

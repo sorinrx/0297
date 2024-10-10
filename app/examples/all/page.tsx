@@ -1,16 +1,13 @@
-//all/page.tsx
-
-
 "use client";
 import React, { useState } from "react";
 import styles from "./page.module.css";
-import Chat from "../../components/chat";
-import { getWeather } from "../../utils/weather";
-import { getExchangeRate } from "../../utils/exchangeRate";
-import { getCurrentDateTime } from "../../utils/dateTime";
-import { addLead, checkAndAddMeeting, getCalendarEvents, getCalendarEventsForRooms } from "../../utils/bitrix";
-import ProtectedPage from "../../components/ProtectedPage";
-
+import Chat from "@/app/components/chat";
+import { getWeather } from "@/app/utils/weather";
+import { getExchangeRate } from "@/app/utils/exchangeRate";
+import { getCurrentDateTime } from "@/app/utils/dateTime";
+import { addLead, checkAndAddMeeting, getCalendarEvents, getCalendarEventsForRooms } from "@/app/utils/bitrix";
+import ProtectedPage from "@/app/components/ProtectedPage";
+import { calculateTaxeNotariale } from "@/app/utils/taxeNotariale";
 
 const FunctionCalling = () => {
   const [messages, setMessages] = useState([]);
@@ -42,6 +39,10 @@ const FunctionCalling = () => {
         const args = JSON.parse(call.function.arguments);
         const data = await getCalendarEventsForRooms(args.rooms, args.from, args.to);
         result = data;
+      } else if (call?.function?.name === "calculate_taxe_notariale") {
+        const args = JSON.parse(call.function.arguments);
+        const data = await calculateTaxeNotariale(args);
+        result = { output: data };
       }
     } catch (error) {
       console.error(`Failed to ${call?.function?.name}:`, error);

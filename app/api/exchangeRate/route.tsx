@@ -1,3 +1,4 @@
+// app/api/exchangeRate/route.tsx
 import { NextResponse } from 'next/server';
 import axios from 'axios';
 

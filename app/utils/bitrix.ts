@@ -59,7 +59,7 @@ export const addLead = async ({ TITLE, NAME, PHONE, EMAIL, RESPONSIBLE_NAME }: {
 
 export const getCalendarEvents = async (room: string, from: string, to: string): Promise<{ output: CalendarEvent[] | string } | { error: string }> => {
   console.log(`Fetching calendar events for ${room} from ${from} to ${to}`);
-  
+
   if (!isValidDate(from) || !isValidDate(to)) {
     return { error: "Formatele datelor trebuie să fie YYYY-MM-DD." };
   }
@@ -73,7 +73,7 @@ export const getCalendarEvents = async (room: string, from: string, to: string):
     }
 
     const events = await fetchEventsFromBitrix(selectedRoom, from, to);
-    
+
     if (events.length === 0) {
       console.log('No existing events found');
       return { output: "Nu există întâlniri programate pentru această perioadă." };

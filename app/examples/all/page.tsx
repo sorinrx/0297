@@ -1,3 +1,6 @@
+//all/page.tsx
+
+
 "use client";
 import React, { useState } from "react";
 import styles from "./page.module.css";
@@ -5,8 +8,9 @@ import Chat from "../../components/chat";
 import { getWeather } from "../../utils/weather";
 import { getExchangeRate } from "../../utils/exchangeRate";
 import { getCurrentDateTime } from "../../utils/dateTime";
-import { addLead, checkAndAddMeeting, getCalendarEvents } from "../../utils/bitrix";
+import { addLead, checkAndAddMeeting, getCalendarEvents, getCalendarEventsForRooms } from "../../utils/bitrix";
 import ProtectedPage from "../../components/ProtectedPage";
+
 
 const FunctionCalling = () => {
   const [messages, setMessages] = useState([]);
@@ -36,7 +40,7 @@ const FunctionCalling = () => {
         result = { output: data };
       } else if (call?.function?.name === "bitrix_get_calendar_events") {
         const args = JSON.parse(call.function.arguments);
-        const data = await getCalendarEvents(args.room, args.from, args.to);
+        const data = await getCalendarEventsForRooms(args.rooms, args.from, args.to);
         result = data;
       }
     } catch (error) {

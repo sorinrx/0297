@@ -1,10 +1,12 @@
+// app/page.tsx
+
 "use client";
 
 import React from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Login from "./components/login";
 import styles from "./page.module.css";
-import config from '../config'; // importă fișierul de configurare
+import { employees } from './utils/authorized_users'; // Importă lista de utilizatori autorizați
 
 const Home = () => {
   const { data: session, status } = useSession();
@@ -23,7 +25,9 @@ const Home = () => {
     );
   }
 
-  if (!config.authorizedEmails.includes(session.user.email)) {
+  const authorizedEmails = employees.map(employee => employee.email);
+
+  if (!authorizedEmails.includes(session.user.email)) {
     return (
       <main className={styles.main}>
         <div className={styles.title}>Unauthorized access</div>

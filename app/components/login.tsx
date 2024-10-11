@@ -1,18 +1,27 @@
-'use client';
-
-import { signIn, signOut, useSession } from 'next-auth/react';
+// app/components/login.tsx
+import { useSession, signIn, signOut } from 'next-auth/react';
 import styles from './login.module.css';
+import { employees } from '../utils/authorized_users'; // Importă lista de utilizatori autorizați
 
-export default function Login() {
+function Login() {
   const { data: session } = useSession();
+
+  const isAuthorized = session && employees.some(employee => employee.email === session.user?.email);
 
   return (
     <div>
       {session ? (
-        <>
-          <p>Signed in as {session.user?.email}</p>
-          <button className={styles.button} onClick={() => signOut()}>Sign out</button>
-        </>
+        isAuthorized ? (
+          <>
+            <p>Signed in as {session.user?.email}</p>
+            <button className={styles.button} onClick={() => signOut()}>Sign out</button>
+          </>
+        ) : (
+          <>
+            <p>You are not authorized to access this application.</p>
+            <button className={styles.button} onClick={() => signOut()}>Sign out</button>
+          </>
+        )
       ) : (
         <>
           <button className={styles.button} onClick={() => signIn('google')}>Sign in with Google</button>
@@ -21,4 +30,5 @@ export default function Login() {
     </div>
   );
 }
-  
+
+export default Login;

@@ -18,7 +18,7 @@ export function findEmployeeData(name: string): EmployeeData | undefined {
 }
 
 export function findRoomData(roomName: string): RoomData | undefined {
-  return rooms.find(room => room.name === roomName);
+  return rooms.find(room => room.name.toLowerCase() === roomName.toLowerCase());
 }
 
 export function findEmployeeByPhoneNumber(phoneNumber: string): EmployeeData | undefined {

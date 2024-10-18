@@ -120,17 +120,17 @@ async function fetchEventsFromBitrix(room: RoomData, from: string, to: string): 
   }
 }
 
-export const addMeeting = async ({ name, from, to, organizer, room, description }: {
+export const addMeeting = async ({ name, from, to, organizer, room, location, description }: {
   name: string,
   from: string,
   to: string,
   organizer: string,
   room?: string,
+  location?: string,
   description?: string
 }) => {
   try {
-    console.log('Starting addMeeting with parameters:', { name, from, to, organizer, room, description });
-
+    console.log('Starting addMeeting with parameters:', { name, from, to, organizer, room, location, description });
     const employeeData = findEmployeeData(organizer);
     if (!employeeData) {
       const errorMessage = `Employee ${organizer} not found`;
@@ -138,16 +138,14 @@ export const addMeeting = async ({ name, from, to, organizer, room, description 
       throw new Error(errorMessage);
     }
     console.log('Employee data found:', employeeData);
-
-    let location = '';
-    if (room) {
-      const roomData = findRoomData(room);
+    let roomLocation = room || location || '';
+    if (roomLocation) {
+      const roomData = findRoomData(roomLocation);
       if (roomData) {
-        location = `calendar_${roomData.calendarId}`;
+        roomLocation = `calendar_${roomData.calendarId}`;
         console.log('Room data found:', roomData);
       } else {
-        console.warn(`Room ${room} not found, using as plain text`);
-        location = room;
+        console.warn(`Room ${roomLocation} not found, using as plain text`);
       }
     }
 
@@ -194,19 +192,23 @@ export const addMeeting = async ({ name, from, to, organizer, room, description 
   }
 };
 
-export const checkAndAddMeeting = async (meetingData: {
-  name: string,
-  from: string,
-  to: string,
-  organizer: string,
-  room: string,
-  description?: string
-}) => {
-  try {
-    console.log('Checking meeting availability:', meetingData);
-
-    const meetingDate = meetingData.from.split(' ')[0];
-    const existingEventsResult = await getCalendarEvents(meetingData.room, meetingDate, meetingDate);
+    export const checkAndAddMeeting = async (meetingData: {
+      name: string,
+      from: string,
+      to: string,
+      organizer: string,
+      room?: string,
+      location?: string,
+      description?: string
+    }) => {
+      try {
+        console.log('Checking meeting availability:', meetingData);
+        const roomName = meetingData.room || meetingData.location;
+        if (!roomName) {
+          return { error: "Room or location is not specified in the meeting data." };
+        }
+        const meetingDate = meetingData.from.split(' ')[0];
+        const existingEventsResult = await getCalendarEvents(roomName, meetingDate, meetingDate);
     
     if ('error' in existingEventsResult) {
       console.error('Error fetching existing events:', existingEventsResult.error);
@@ -250,7 +252,10 @@ export const checkAndAddMeeting = async (meetingData: {
     }
 
     console.log('No overlap detected, proceeding to add meeting');
-    return await addMeeting(meetingData);
+return await addMeeting({
+      ...meetingData,
+      room: roomName // Ensure the room property is set correctly
+    });
   } catch (error) {
     const errorMessage = error.message;
     console.error('Failed to check and add meeting:', errorMessage);
@@ -268,7 +273,11 @@ export const getCalendarEventsForRooms = async (roomsInput: string | string[] | 
   if (roomsInput === 'all') {
     roomsToFetch = rooms.map(room => room.name);
   } else if (typeof roomsInput === 'string') {
-    roomsToFetch = [roomsInput];
+    const roomData = findRoomData(roomsInput);
+    if (!roomData) {
+      return { error: `Room "${roomsInput}" not found.` };
+    }
+    roomsToFetch = [roomData.name];
   } else {
     roomsToFetch = roomsInput;
   }

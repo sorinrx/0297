@@ -7,6 +7,7 @@ import Markdown from "react-markdown";
 // @ts-expect-error - no types for this yet
 import { AssistantStreamEvent } from "openai/resources/beta/assistants/assistants";
 import { RequiredActionFunctionToolCall } from "openai/resources/beta/threads/runs/runs";
+import { checkQuestionCompleteness } from '../utils/questionUtils';
 
 type MessageProps = {
   role: "user" | "assistant" | "code";
@@ -136,10 +137,19 @@ const Chat = ({
     handleReadableStream(stream);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userInput.trim()) return;
-    sendMessage(userInput);
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!userInput.trim()) return;
+      const { isComplete, missingInfo } = checkQuestionCompleteness(userInput);
+      if (!isComplete) {
+        const missingInfoMessage = `Pentru a vă putea ajuta, am nevoie de următoarele informații: ${missingInfo.join(', ')}. Vă rog să le includeți în întrebarea dumneavoastră.`;
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { role: "assistant", text: missingInfoMessage },
+        ]);
+        return;
+      }
+      sendMessage(userInput);
     setMessages((prevMessages) => [
       ...prevMessages,
       { role: "user", text: userInput },

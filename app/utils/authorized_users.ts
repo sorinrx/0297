@@ -60,6 +60,10 @@ export const rooms: RoomData[] = [
   { name: "Sala 2", calendarId: 28 },
   { name: "Sala 3", calendarId: 108 }
 ];
+export function findEmployeeByEmail(email: string): EmployeeData | undefined {
+  return employees.find(emp => emp.email.toLowerCase() === email.toLowerCase());
+}
+
 export function findEmployeeData(name: string): EmployeeData | undefined {
   return employees.find(emp => emp.name.toLowerCase() === name.toLowerCase());
 }

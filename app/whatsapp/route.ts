@@ -5,10 +5,13 @@ import { getCurrentDateTime } from '../utils/dateTime';
 import { getExchangeRate } from '../utils/exchangeRate';
 import { addLead, checkAndAddMeeting, getCalendarEvents, getCalendarEventsForRooms } from '../utils/bitrix';
 import { authorizeWhatsAppAccess, setAuthorizedUser, getAuthorizedUser } from '../utils/authorized_users';
+import { checkQuestionCompleteness } from '../utils/questionUtils';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 async function executeFunction(functionName: string, args: any) {
   console.log(`Executing function: ${functionName} with args:`, args);
@@ -42,36 +45,30 @@ async function executeFunction(functionName: string, args: any) {
 
 export async function POST(req: Request) {
   console.log('Received WhatsApp message');
-  
   const body = await req.text();
   const params = new URLSearchParams(body);
   const incomingMessage = params.get('Body');
   const from = params.get('From');
-
+  if (!incomingMessage || !from) {
+    console.error('No incoming message or sender information found');
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
   console.log(`Message from ${from}: ${incomingMessage}`);
 
-  // Verifică dacă utilizatorul este autorizat
-  const phoneNumber = from!.replace('whatsapp:', '');
+  // Extragem numărul de telefon din 'from' (de obicei în format 'whatsapp:+123456789')
+  const phoneNumber = from.replace('whatsapp:', '');
+
+  // Verificăm dacă utilizatorul este autorizat
   const authorizedUser = authorizeWhatsAppAccess(phoneNumber);
-
-  // Inițializează clientul Twilio
-  const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-
   if (!authorizedUser) {
-    console.log(`Unauthorized access attempt from ${from}`);
-    
-    // Trimite mesajul cu link-ul YouTube pentru utilizatorii neautorizați
-    await twilioClient.messages.create({
-      body: "Acces neautorizat. Vă rugăm să vizionați acest video pentru mai multe informații: https://youtu.be/e3haeOxhV0E?si=LdWhrYJy8q9aAxgg",
-      from: 'whatsapp:+15556008949',
-      to: from!
-    });
-
-    return NextResponse.json({ message: "Unauthorized access message sent" }, { status: 401 });
+    console.error('Unauthorized access attempt');
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
   }
 
-  // Setează utilizatorul autorizat
+  // Setăm utilizatorul autorizat
   setAuthorizedUser(phoneNumber, authorizedUser);
+
+  const { isComplete, missingInfo } = checkQuestionCompleteness(incomingMessage);
 
   try {
     console.log('Creating thread');
@@ -142,11 +139,10 @@ export async function POST(req: Request) {
     await twilioClient.messages.create({
       body: personalizedResponse,
       from: 'whatsapp:+15556008949',
-      to: from!
+      to: from
     });
 
     console.log('Response sent back to WhatsApp');
-
     return NextResponse.json({ message: "Message processed successfully" });
   } catch (error) {
     console.error('Error:', error);

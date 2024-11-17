@@ -1,0 +1,51 @@
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.toggleButton {
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  background-color: #d22630;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  align-self: center;
+}
+
+.toggleButton:hover {
+  background-color: #b71f2a;
+}
+
+.pdfContainer {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+  height: calc(100vh - 100px);
+}
+
+.pdfFrame {
+  flex: 1;
+  height: 100%;
+}
+
+.pdfViewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* When not split, the first PDF takes full width */
+.pdfContainer:not(.split) .pdfFrame {
+  width: 100%;
+}
+
+/* When split, each PDF takes half width */
+.pdfContainer.split .pdfFrame {
+  width: 50%;
+}

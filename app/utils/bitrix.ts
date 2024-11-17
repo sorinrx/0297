@@ -95,8 +95,8 @@ function isValidDate(dateString: string): boolean {
 async function fetchEventsFromBitrix(room: RoomData, from: string, to: string): Promise<CalendarEvent[]> {
   const params = {
     type: 'location',
-    from,
-    to,
+    from: `${from} UTC+2`,
+    to: `${to} UTC+2`,
     section: room.calendarId.toString()
   };
 
@@ -148,27 +148,27 @@ export const addMeeting = async ({ name, from, to, organizer, room, location, de
         console.warn(`Room ${roomLocation} not found, using as plain text`);
       }
     }
-
     const meetingData = {
-      type: 'user',
-      ownerId: employeeData.userId.toString(),
-      name,
-      description: description || '',
-      from: `${from} ${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
-      to: `${to} ${Intl.DateTimeFormat().resolvedOptions().timeZone}`,  
-      section: employeeData.calendarId.toString(),
-      is_meeting: 'Y',
-      private_event: 'N',
-      location: location,
-      attendees: [employeeData.userId.toString()],
-      host: employeeData.userId.toString(),
-      meeting: {
-        host_name: "",
-        text: "",
-        open: true,
-        notify: true,
-        reinvite: false
-      }
+          type: 'user',
+          ownerId: employeeData.userId.toString(),
+          name,
+          description: description || '',
+          // Eliminăm complet UTC+2 și trimitem ora direct
+          from: from.replace(' UTC+2', ''),  // ex: "2024-11-13 16:00:00"
+          to: to.replace(' UTC+2', ''),      // ex: "2024-11-13 16:30:00"
+          section: employeeData.calendarId.toString(),
+          is_meeting: 'Y',
+          private_event: 'N',
+          location: location,
+          attendees: [employeeData.userId.toString()],
+          host: employeeData.userId.toString(),
+          meeting: {
+            host_name: "",
+            text: "",
+            open: true,
+            notify: true,
+            reinvite: false
+          }
     };
 
     console.log('Sending request to addMeeting with data:', JSON.stringify(meetingData, null, 2));
@@ -223,8 +223,8 @@ export const addMeeting = async ({ name, from, to, organizer, room, location, de
     const existingEvents = existingEventsResult.output as CalendarEvent[];
     console.log('Existing events:', existingEvents);
 
-    const newMeetingStart = new Date(meetingData.from);
-    const newMeetingEnd = new Date(meetingData.to);
+        const newMeetingStart = new Date(`${meetingData.from}+02:00`);
+        const newMeetingEnd = new Date(`${meetingData.to}+02:00`);
 
     const overlap = existingEvents.some(event => {
       let [datePart, timePart] = event.dateFrom.split(' ');

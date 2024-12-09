@@ -6,7 +6,6 @@ import { getWeather } from "@/app/utils/weather";
 import { getExchangeRate } from "@/app/utils/exchangeRate";
 import { getCurrentDateTime } from "@/app/utils/dateTime";
 import { addLead, checkAndAddMeeting, getCalendarEvents, getCalendarEventsForRooms } from "@/app/utils/bitrix";
-import ProtectedPage from "@/app/components/ProtectedPage";
 import { calculateTaxeNotariale } from "@/app/utils/taxeNotariale";
 
 const FunctionCalling = () => {
@@ -53,7 +52,6 @@ const FunctionCalling = () => {
   };
 
   return (
-    <ProtectedPage>
       <main className={styles.main}>
         <div className={styles.chatContainer}>
           <div className={styles.chat}>
@@ -66,7 +64,6 @@ const FunctionCalling = () => {
           </div>
         </div>
       </main>
-    </ProtectedPage>
   );
 };
 

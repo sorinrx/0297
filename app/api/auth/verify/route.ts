@@ -34,13 +34,24 @@ export async function POST(request: Request) {
 
     // Get employee data
     const employee = employees.find(emp => emp.phonePrivateNumber === phoneNumber);
+    
+    if (!employee) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
 
     // Clean up the verification code
     delete global.verificationCodes[phoneNumber];
 
+    // Return user data for the frontend
     return NextResponse.json({
       success: true,
-      user: employee
+      user: {
+        name: employee.name,
+        phonePrivateNumber: employee.phonePrivateNumber
+      }
     });
 
   } catch (error) {

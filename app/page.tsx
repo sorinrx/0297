@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from 'next/navigation';
 import styles from "./page.module.css";
 
 function Home() {
@@ -9,6 +10,7 @@ function Home() {
   const [showVerification, setShowVerification] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const validatePhoneNumber = (number: string) => {
     // Romanian phone number format: +40xxxxxxxxx
@@ -70,8 +72,11 @@ function Home() {
         throw new Error(data.error || 'Failed to verify code');
       }
 
-      // Redirect to main content after successful verification
-      window.location.href = '/examples/all';
+      // Store user data in localStorage
+      localStorage.setItem('userData', JSON.stringify(data.user));
+
+      // Redirect to internal page instead of examples/all
+      router.push('/internal');
     } catch (error) {
       setError(error.message);
     } finally {

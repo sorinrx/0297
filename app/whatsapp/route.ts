@@ -59,7 +59,7 @@ export async function POST(req: Request) {
   const phoneNumber = from.replace('whatsapp:', '');
 
   // Verificăm dacă utilizatorul este autorizat
-  const authorizedUser = authorizeWhatsAppAccess(phoneNumber);
+  const authorizedUser = await authorizeWhatsAppAccess(phoneNumber);
   if (!authorizedUser) {
     console.error('Unauthorized access attempt');
     return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });

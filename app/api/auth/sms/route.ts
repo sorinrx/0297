@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
-import { employees } from '@/app/utils/authorized_users';
+import { authorizeWhatsAppAccess } from '@/app/utils/authorized_users';
+import { createClient } from '@supabase/supabase-js';
 
 const SMSAPI_URL = 'https://api.smsapi.com/sms.do';
 const SMSAPI_TOKEN = process.env.SMSAPI_OAUTH_TOKEN;
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 async function sendSMS(phoneNumber: string, code: string) {
   try {
@@ -53,8 +59,23 @@ export async function POST(request: Request) {
   try {
     const { phoneNumber } = await request.json();
     
+    // Verificăm direct în baza de date
+    const { data: employees, error: dbError } = await supabase
+      .from('employees')
+      .select('*');
+    
+    console.log('All employees in database:', employees);
+    console.log('Database error if any:', dbError);
+    
     // Check if the phone number is in the authorized list
-    const employee = employees.find(emp => emp.phonePrivateNumber === phoneNumber);
+    console.log('Received phone number:', phoneNumber);
+
+    // Verificăm dacă numărul începe cu + și îl adăugăm dacă lipsește
+    const formattedPhoneNumber = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+    console.log('Formatted phone number:', formattedPhoneNumber);
+
+    const employee = await authorizeWhatsAppAccess(formattedPhoneNumber);
+    console.log('Found employee:', employee);
     
     if (!employee) {
       return NextResponse.json(

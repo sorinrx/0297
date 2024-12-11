@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { EmployeeData, RoomData, findEmployeeData, findRoomData, rooms } from './employeeData';
+import { EmployeeData, RoomData, findEmployeeData, findRoomData, rooms } from './authorized_users';
 
 const BITRIX_WEBHOOK_URL_LEAD = 'https://crm.renet.ro/rest/1/c8t4itlkucmewkz2/crm.lead.add.json';
 const BITRIX_WEBHOOK_URL_MEETING = 'https://crm.renet.ro/rest/1/b4efdi1y4vosq6k0/calendar.event.add.json';
@@ -24,7 +24,7 @@ export const addLead = async ({ TITLE, NAME, PHONE, EMAIL, RESPONSIBLE_NAME }: {
   try {
     console.log('Received RESPONSIBLE_NAME:', RESPONSIBLE_NAME);
 
-    const employeeData = findEmployeeData(RESPONSIBLE_NAME);
+    const employeeData = await findEmployeeData(RESPONSIBLE_NAME);
     console.log('Found employee data:', employeeData);
 
     if (!employeeData) {
@@ -33,7 +33,7 @@ export const addLead = async ({ TITLE, NAME, PHONE, EMAIL, RESPONSIBLE_NAME }: {
       throw new Error(errorMessage);
     }
 
-    const ASSIGNED_BY_ID = employeeData.userId;
+    const ASSIGNED_BY_ID = employeeData.userid;
     console.log('Using ASSIGNED_BY_ID:', ASSIGNED_BY_ID);
 
     console.log('Sending request to addLead with data:', { TITLE, NAME, PHONE, EMAIL, ASSIGNED_BY_ID });
@@ -131,7 +131,7 @@ export const addMeeting = async ({ name, from, to, organizer, room, location, de
 }) => {
   try {
     console.log('Starting addMeeting with parameters:', { name, from, to, organizer, room, location, description });
-    const employeeData = findEmployeeData(organizer);
+    const employeeData = await findEmployeeData(organizer);
     if (!employeeData) {
       const errorMessage = `Employee ${organizer} not found`;
       console.error(errorMessage);
@@ -149,26 +149,22 @@ export const addMeeting = async ({ name, from, to, organizer, room, location, de
       }
     }
     const meetingData = {
-          type: 'user',
-          ownerId: employeeData.userId.toString(),
-          name,
-          description: description || '',
-          // Eliminăm complet UTC+2 și trimitem ora direct
-          from: from.replace(' UTC+2', ''),  // ex: "2024-11-13 16:00:00"
-          to: to.replace(' UTC+2', ''),      // ex: "2024-11-13 16:30:00"
-          section: employeeData.calendarId.toString(),
-          is_meeting: 'Y',
-          private_event: 'N',
-          location: location,
-          attendees: [employeeData.userId.toString()],
-          host: employeeData.userId.toString(),
-          meeting: {
-            host_name: "",
-            text: "",
-            open: true,
-            notify: true,
-            reinvite: false
-          }
+      type: 'user',
+      ownerId: employeeData.userid.toString(),
+      name,
+      description: description || '',
+      from: from.replace(' UTC+2', ''),
+      to: to.replace(' UTC+2', ''),
+      section: employeeData.calendarid.toString(),
+      is_meeting: 'Y',
+      private_event: 'N',
+      location: location,
+      attendees: [employeeData.userid.toString()],
+      host: employeeData.userid.toString(),
+      meeting: {
+        host_name: "",
+        text: "",
+      }
     };
 
     console.log('Sending request to addMeeting with data:', JSON.stringify(meetingData, null, 2));

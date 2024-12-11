@@ -35,8 +35,8 @@ export function checkQuestionCompleteness(question: string): { isComplete: boole
   };
 }
 
-export function processUserQuestion(question: string, userEmail: string): string {
-  const employee = findEmployeeByEmail(userEmail);
+export async function processUserQuestion(question: string, userEmail: string): Promise<string> {
+  const employee = await findEmployeeByEmail(userEmail);
   if (!employee) {
     return "Ne pare rău, nu vă putem identifica. Vă rugăm să vă autentificați din nou.";
   }
@@ -50,7 +50,7 @@ export function processUserQuestion(question: string, userEmail: string): string
 
   // Procesăm întrebarea aici
   if (question.toLowerCase().includes('cine sunt eu')) {
-    return `${firstName}, tu ești ${employee.name}. Ai ID-ul de utilizator ${employee.userId} și ID-ul de calendar ${employee.calendarId}. Numărul tău de telefon este ${employee.phoneNumber}.`;
+    return `${firstName}, tu ești ${employee.name}. Ai ID-ul de utilizator ${employee.userid} și ID-ul de calendar ${employee.calendarid}. Numărul tău de telefon este ${employee.phonenumber}.`;
   }
 
   if (question.toLowerCase().includes('întâlniri')) {
@@ -60,7 +60,7 @@ export function processUserQuestion(question: string, userEmail: string): string
       date = getDateFromReference(dateReference[0]);
     }
 
-    return `${firstName}, pentru data de ${formatDate(date)}, trebuie să verific întâlnirile în calendarul cu ID-ul ${employee.calendarId}. Voi implementa această funcționalitate în curând.`;
+    return `${firstName}, pentru data de ${formatDate(date)}, trebuie să verific întâlnirile în calendarul cu ID-ul ${employee.calendarid}. Voi implementa această funcționalitate în curând.`;
   }
 
   return `${firstName}, îmi pare rău, dar nu am înțeles întrebarea. Poți să reformulezi, te rog?`;

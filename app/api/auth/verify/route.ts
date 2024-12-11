@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { employees } from '@/app/utils/authorized_users';
+import { findEmployeeByEmail, authorizeWhatsAppAccess } from '@/app/utils/authorized_users';
 
 export async function POST(request: Request) {
   try {
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     }
 
     // Get employee data
-    const employee = employees.find(emp => emp.phonePrivateNumber === phoneNumber);
+    const employee = await authorizeWhatsAppAccess(phoneNumber);
     
     if (!employee) {
       return NextResponse.json(
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       success: true,
       user: {
         name: employee.name,
-        phonePrivateNumber: employee.phonePrivateNumber
+        phoneprivatenumber: employee.phoneprivatenumber
       }
     });
 

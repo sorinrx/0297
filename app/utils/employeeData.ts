@@ -1,28 +1,19 @@
-export interface EmployeeData {
-  name: string;
-  calendarId: number;
-  userId: number;
-  phoneNumber: string;
+import { loadEmployees, findEmployeeData, type EmployeeData, type RoomData } from './authorized_users';
+
+export async function findEmployeeByName(name: string): Promise<EmployeeData | undefined> {
+  return await findEmployeeData(name);
 }
 
-export interface RoomData {
-  name: string;
-  calendarId: number;
+export async function findEmployeeByPhoneNumber(phoneNumber: string): Promise<EmployeeData | undefined> {
+  const employees = await loadEmployees();
+  return employees.find(employee => employee.phoneprivatenumber === phoneNumber);
 }
 
-export const employees: EmployeeData[] = JSON.parse(process.env.NEXT_PUBLIC_EMPLOYEE_DATA || '[]');
-export const rooms: RoomData[] = JSON.parse(process.env.NEXT_PUBLIC_ROOM_DATA || '[]');
+export const rooms: RoomData[] = [
+  { name: "Sala 1", calendarId: 2 },
+  { name: "Sala 2", calendarId: 28 },
+  { name: "Sala 3", calendarId: 108 }
+];
 
-export function findEmployeeData(name: string): EmployeeData | undefined {
-  return employees.find(employee => employee.name === name);
-}
-
-export function findRoomData(roomName: string): RoomData | undefined {
-  return rooms.find(room => room.name.toLowerCase() === roomName.toLowerCase());
-}
-
-export function findEmployeeByPhoneNumber(phoneNumber: string): EmployeeData | undefined {
-  return employees.find(employee => employee.phoneNumber === phoneNumber);
-}
-
-export { employees as EmployeeData, rooms as RoomData };
+// Re-export types
+export type { EmployeeData, RoomData };

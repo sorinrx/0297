@@ -1,19 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "./contexts/AuthContext";
 import styles from "./page.module.css";
 
-function Home() {
+export default function Home() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [showVerification, setShowVerification] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { isAuthenticated, login } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
 
   const validatePhoneNumber = (number: string) => {
-    // Romanian phone number format: +40xxxxxxxxx
     const romanianPhoneRegex = /^\+40[0-9]{9}$/;
     return romanianPhoneRegex.test(number);
   };
@@ -52,7 +59,7 @@ function Home() {
     }
   };
 
-  const handleVerify = async (e: React.FormEvent) => {
+  const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -72,11 +79,8 @@ function Home() {
         throw new Error(data.error || 'Failed to verify code');
       }
 
-      // Store user data in localStorage
-      localStorage.setItem('userData', JSON.stringify(data.user));
-
-      // Redirect to internal page instead of examples/all
-      router.push('/internal');
+      login(data.user);
+      router.push('/dashboard');
     } catch (error) {
       setError(error.message);
     } finally {
@@ -107,8 +111,8 @@ function Home() {
               className={styles.input}
               pattern="\+40[0-9]{9}"
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className={styles.button}
             >
@@ -116,7 +120,7 @@ function Home() {
             </button>
           </form>
         ) : (
-          <form onSubmit={handleVerify} className={styles.form}>
+          <form onSubmit={handleVerifyCode} className={styles.form}>
             <input
               type="text"
               value={verificationCode}
@@ -127,8 +131,8 @@ function Home() {
               maxLength={6}
               pattern="[0-9]{6}"
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className={styles.button}
             >
@@ -148,5 +152,3 @@ function Home() {
     </main>
   );
 }
-
-export default Home;

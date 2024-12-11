@@ -1,5 +1,0 @@
-modules = ["nodejs-22", "python-3.11"]
-[deployment]
-build = ["sh", "-c", "npm run build"]
-run = ["sh", "-c", "npm start"]
-deploymentTarget = "cloudrun"
